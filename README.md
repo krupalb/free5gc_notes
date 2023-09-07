@@ -210,6 +210,42 @@ Step 21: Test UERANSIM
   kubectl --namespace free5gc exec -it $POD_NAME -- traceroute -i uesimtun0 www.google.com
 
 ```
+Step 22: Verify by running UERANSIM test
+
+```
+helm --namespace free5gc test ueransim-v1
+NAME: ueransim-v1
+LAST DEPLOYED: Thu Sep  7 12:33:52 2023
+NAMESPACE: free5gc
+STATUS: deployed
+REVISION: 1
+TEST SUITE:     ueransim-v1-test-connection
+Last Started:   Thu Sep  7 12:45:55 2023
+Last Completed: Thu Sep  7 12:45:55 2023
+Phase:          Succeeded
+TEST SUITE:     connectivity-test-configmap
+Last Started:   Thu Sep  7 12:45:55 2023
+Last Completed: Thu Sep  7 12:45:55 2023
+Phase:          Succeeded
+TEST SUITE:     ueransim-v1-test-connection
+Last Started:   Thu Sep  7 12:45:55 2023
+Last Completed: Thu Sep  7 12:45:55 2023
+Phase:          Succeeded
+TEST SUITE:     ueransim-v1-test-connection
+Last Started:   Thu Sep  7 12:45:55 2023
+Last Completed: Thu Sep  7 12:45:55 2023
+Phase:          Succeeded
+TEST SUITE:     ueransim-v1-test-connection
+Last Started:   Thu Sep  7 12:45:55 2023
+Last Completed: Thu Sep  7 12:46:05 2023
+Phase:          Succeeded
+NOTES:
+#
+# Software Name : towards5gs-helm
+# SPDX-FileCopyrightText: Copyright (c) 2021 Orange
+# SPDX-License-Identifier: Apache-2.0
+#
+```
 
 
 
