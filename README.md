@@ -1,3 +1,10 @@
+# free5gc_notes
+
+free5GC and UERANSIM versions / images can be found here (these need to be validated)
+https://hub.docker.com/u/towards5gs
+
+## Getting started
+
 After you install Ubuntu 18.04 
 
 Step 1: Upgrade the kernel
