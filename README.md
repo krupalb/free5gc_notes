@@ -9,23 +9,47 @@ Step 2: Verify the kernel
 $ uname -sr
 Linux 5.4.0-150-generic
 ```
-Step 3: Install gtp5g
+Step 3: Ensure the ethernet interface is correct in relation to `towards5gs-helm`
+IMPORTANT
+* A physical network interface on each Kubernetes node named eth0.
+* A physical network interface on each Kubernetes node named eth1 to connect the UPF to the Data Network.
+* In my case I've created a NATNetwork with the same IP range of 10.100.100.0/24 for Eth1 to connect to the wide data network, i.e. internet
+* see this link (https://github.com/Orange-OpenSource/towards5gs-helm/tree/main/charts/free5gc#networks-configuration)
+```
+$ sudo nano /etc/netplan/00-installer-config.yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    eth0:
+      dhcp4: true
+    eth1:
+      #dhcp4: true
+      addresses:
+      - 10.100.100.100/24
+      nameservers:
+       addresses:
+       - 8.8.8.8
+       search: []
+  version: 2
+
+```
+Step 4: Install gtp5g
 ```
 $ sudo apt -y install git gcc g++ cmake autoconf libtool pkg-config libmnl-dev libyaml-dev
 $ git clone https://github.com/free5gc/gtp5g.git && cd gtp5g
 $ sudo make install
 ```
-Step 4: Verify gtp5g is running
+Step 5: Verify gtp5g is running
 ```
 $ lsmod|grep -i gtp
 gtp5g                 122880  0
 udp_tunnel             16384  3 gtp5g,wireguard,vxlan
 ```
-Step 5: Install Kubernetes (Microk8s)
+Step 6: Install Kubernetes (Microk8s)
 ```
 $ sudo snap install microk8s --classic --channel=1.24/stable
 ```
-Step 6: Configure local user & VM to use local `kubectl` instead of using microk8s all the time
+Step 7: Configure local user & VM to use local `kubectl` instead of using microk8s all the time
 ```
 $ sudo usermod -a -G microk8s $USER
 $ sudo chown -f -R $USER ~/.kube
@@ -35,13 +59,13 @@ $ mkdir .kube
 $ cd .kube
 $ microk8s config > config
 ```
-Step 7: Install `kubectl` locally
+Step 8: Install `kubectl` locally
 ```
 $ curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
 $ chmod +x kubectl
 $ sudo mv kubectl /usr/local/bin/
 ```
-Step 8: Install helm
+Step 9: Install helm
 ```
 $ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 $ chmod 700 get_helm.sh
@@ -49,7 +73,7 @@ $ ./get_helm.sh
 $ helm version
 version.BuildInfo{Version:"v3.12.3", GitCommit:"3a31588ad33fe3b89af5a2a54ee1d25bfe6eaa5e", GitTreeState:"clean", GoVersion:"go1.20.7"}
 ```
-Step 9: Disable Calico as it needs additional config, we use flannel instead and reboot
+Step 10: Disable Calico as it needs additional config, we use flannel instead and reboot
 ```
 $ microk8s disable ha-cluster --force
 Infer repository core for addon ha-cluster
@@ -60,7 +84,7 @@ Enabling flanneld and etcd
 HA disabled
 $ sudo reboot
 ```
-Step 10: Setup persistent volume for Mongo-db
+Step 11: Setup persistent volume for Mongo-db
 
 Note: the path being set and the hostname as per the node. In this instance it is ` /home/krupal/kubedata` and `ubuntuk8s` respectively.
 
@@ -94,22 +118,22 @@ spec:
 $  kubectl apply -f pv.yaml
 persistentvolume/example-local-pv created         
 ```
-Step 11: Add the helm repo
+Step 12: Add the helm repo
 ```
 $ helm repo add towards5gs 'https://raw.githubusercontent.com/Orange-OpenSource/towards5gs-helm/main/repo/'
 ```
-Step 12: Enable the k8s plugins one by one
+Step 13: Enable the k8s plugins one by one
 ```
 $ microk8s enable dns ingress dashboard storage community helm3
 ```
-Step 13: Enable Multus plugin & verify cluster is up, `ns` is there, pods are running
+Step 14: Enable Multus plugin & verify cluster is up, `ns` is there, pods are running
 ```
 $ microk8s enable multus
 $ kubectl get nodes
 $ kubectl get ns
 $ kubectl get pods -A -o wide
 ```
-Step 14: Deploy free5gc using helm & verify
+Step 15: Deploy free5gc using helm & verify
 ```
 $ helm -n free5gc install free5gc-v1 towards5gs/free5gc
 $ kubectl get pods -A -o wide
@@ -135,7 +159,7 @@ kube-system   kubernetes-dashboard-765646474b-j9kwk                  1/1     Run
 kube-system   metrics-server-5f8f64cb86-tw2n5                        1/1     Running   1 (14m ago)   14m     10.1.92.12   ubuntuk8s   <none>           <none>
 
 ```
-Step 15: Validate Free5GC web ui port, and it is exposed on port 5000 as nodeport service.
+Step 16: Validate Free5GC web ui port, and it is exposed on port 5000 as nodeport service.
 ```
 kubectl get svc -n free5gc
 NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
@@ -151,17 +175,45 @@ nrf-nnrf                          ClusterIP   10.152.183.198   <none>        800
 webui-service                     NodePort    10.152.183.122   <none>        5000:30500/TCP   3m5s
 
 ```
-Step 16:  Port forward to access the Web UI NodePort service
+Step 17:  Port forward to access the Web UI NodePort service
 
 `kubectl port-forward --namespace free5gc svc/webui-service 5000:5000`
 
-Step 17: SSH port forwarding
+Step 18: SSH port forwarding
 Note: I've setup a VirtualBox port forwarding on the NATNetwork over localport 2266 to access the node via SSH.
-![](https://hackmd.io/_uploads/BJ8YwNwA3.png)
+![](https://hackmd.io/_uploads/B1SHSHw0h.png)
+
 
 ```
 ssh -L localhost:5000:localhost:5000 krupal@localhost -p 2266
 ```
+
+Step 19: Setup a Subscriber on free5GC before setting up the UERANSIM
+![](https://hackmd.io/_uploads/rJ3YtEDA3.png)
+
+Step 20: Deploy the UERANSIM from the same helm repo
+```
+$ helm -n free5gc install ueransim-v1 towards5gs/ueransim
+```
+Step 21: Test UERANSIM
+```
+1. Get the UE Pod name by running:
+  export POD_NAME=$(kubectl get pods --namespace free5gc -l "component=ue" -o jsonpath="{.items[0].metadata.name}")
+
+2. Check that uesimtun0 interface has been created by running these commands:
+  kubectl --namespace free5gc logs $POD_NAME
+  kubectl --namespace free5gc exec -it $POD_NAME -- ip address
+
+3. Try to access internet from the UE by running:
+  kubectl --namespace free5gc exec -it $POD_NAME -- ping -I uesimtun0 www.google.com
+  kubectl --namespace free5gc exec -it $POD_NAME -- curl --interface uesimtun0 www.google.com
+  kubectl --namespace free5gc exec -it $POD_NAME -- traceroute -i uesimtun0 www.google.com
+
+```
+
+
+
+
 
 
 
