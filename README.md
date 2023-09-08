@@ -3,9 +3,27 @@
 free5GC and UERANSIM versions / images can be found here (these need to be validated)
 https://hub.docker.com/u/towards5gs
 
+## Environment Description
+* Virtual Machine (VM)
+    * VM Software: VirtualBox
+    * VM Guest OS: Ubuntu 18.04 LTS
+    * CPU Allocation: 4 cores
+    * Memory Allocation: 12GB RAM (4GB will do)
+    * Storage Allocation: ~30GB
+* Network Configuration
+    * NIC 1 (Network Interface Card)
+        * Type: Bridged Adapter
+        * Connected to: Host's Ethernet
+        * Purpose: Used for external network communication.
+    * NIC 2 (Network Interface Card)
+        * Type: NAT Network
+        * Connected to: Internal NAT network
+        * Purpose: Used for internal communication within the VM.
+        * 
+
 ## Getting started
 
-After you install Ubuntu 18.04 
+After you install Ubuntu 18.04 on VM
 
 Step 1: Upgrade the kernel
 ```
