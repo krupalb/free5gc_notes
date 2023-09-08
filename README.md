@@ -1,6 +1,10 @@
 # free5gc_notes
 
-free5GC and UERANSIM versions / images can be found here (these need to be validated)
+## Purpose
+
+This environment has been set up to facilitate the development, testing, security research, and deployment of 5G Core Network components using Free5GC, UERANSIM, and Kubernetes. The configuration includes both external and internal network interfaces to support various communication needs within the virtual machine. The use of a Linux-based environment alongside VirtualBox (or any hypervisor) and Kubernetes enables efficient management of software components, automated deployment, and resolution of any dependencies required for 5G network development and testing.
+
+Note on versions: free5GC and UERANSIM versions / images can be found here (these need to be validated)
 https://hub.docker.com/u/towards5gs
 
 ## Environment Description
@@ -19,11 +23,18 @@ https://hub.docker.com/u/towards5gs
         * Type: NAT Network
         * Connected to: Internal NAT network
         * Purpose: Used for internal communication within the VM.
-        * 
+* Software and Sources
+    * Free5GC + UERANSIM
+        * GitHub Repository: https://github.com/free5gc/free5gc
+        * Additional Source: https://github.com/Orange-OpenSource/towards5gs-helm
+        * Description: Free5GC is an open-source 5G Core Network implementation, and the "towards5gs-helm" repository contains Helm charts for deploying Free5GC & UERANSIM components.
+     * Microk8s
+        * Website: https://microk8s.io/
+        * Description: Microk8s is a lightweight Kubernetes distribution that provides a convenient way to set up and manage Kubernetes clusters for development and testing purposes.
 
 ## Getting started
 
-After you install Ubuntu 18.04 on VM
+After you install Ubuntu 18.04 on VM similar to the config shown above
 
 Step 1: Upgrade the kernel
 ```
